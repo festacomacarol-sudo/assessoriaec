@@ -65,6 +65,14 @@ h2{font-family:var(--arches);font-weight:400;font-size:clamp(34px,5vw,52px);text
 .rv.in{opacity:1;transform:none}
 .rv.d1{transition-delay:.12s}.rv.d2{transition-delay:.24s}.rv.d3{transition-delay:.36s}
 
+
+/* encerrada */
+.endbar{display:none;position:absolute;left:0;right:0;top:100%;background:#7a4a57;color:#fff;font-family:var(--serif);font-size:15px;line-height:1.4;text-align:center;padding:10px max(5vw,18px);z-index:-1}
+.endbar a{color:#fff;text-decoration:underline;text-underline-offset:3px;font-weight:500}
+body.ended .endbar{display:block}
+body.ended .count .u{display:none}
+body.ended .count .lbl{font-size:18px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.45);border-radius:14px;padding:12px 16px;width:auto}
+
 /* progress + nav */
 #prog{position:fixed;top:0;left:0;height:3px;width:100%;transform-origin:0 50%;transform:scaleX(0);background:linear-gradient(90deg,#f6c9d3,var(--rose3));z-index:60}
 nav{position:fixed;inset:0 0 auto;z-index:50;display:flex;align-items:center;gap:24px;padding:14px max(5vw,18px);color:#fff;transition:background .4s,box-shadow .4s,color .4s,padding .4s}
@@ -382,7 +390,8 @@ footer .tagline{font-family:var(--script);font-size:30px;color:var(--rose2);marg
     <a href="#monte">Monte a sua</a>
     <a href="#condicoes">Condições</a>
   </div>
-  <a class="btn solid" href="#monte">Garantir<span class="hide-s">&nbsp;meu presente</span></a>
+  <a class="btn solid" id="navcta" href="#monte">Garantir<span class="hide-s">&nbsp;meu presente</span></a>
+  <div class="endbar" role="status">A Edição Especial de Natal foi encerrada em 31/01/2027. <a href="https://wa.me/5511979888263?text=Ol%C3%A1!%20Vim%20pelo%20site%20e%20quero%20saber%20sobre%20as%20condi%C3%A7%C3%B5es%20atuais%20da%20EC%20Assessoria." target="_blank" rel="noopener">Fale com a equipe</a> sobre as condições atuais.</div>
   <button class="burger" id="burger" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="navlinks"><i></i><i></i><i></i></button>
 </nav>
 
@@ -436,7 +445,7 @@ footer .tagline{font-family:var(--script);font-size:30px;color:var(--rose2);marg
           <div><b>Condição especial</b><span>Contrate com os valores de 2026 e garanta condições especiais, além de acesso às novidades e benefícios exclusivos de 2027 e 2028 para o seu evento.</span></div>
           <div><b>Novidades 2027</b><span>Processos digitais mais tecnológicos e práticos, com RSVP por meio de link exclusivo.</span></div>
         </div>
-        <p class="when">Contratação de <b>01/12/2026 a 31/01/2027</b>, mediante disponibilidade de agenda.</p>
+        <p class="when" id="when">Contratação de <b>01/12/2026 a 31/01/2027</b>, mediante disponibilidade de agenda.</p>
         <a class="btn rose" href="#monte">Quero garantir o meu</a><br>
         <button class="again" id="again" type="button">Fechar o presente</button>
       </div>
@@ -682,9 +691,16 @@ $$('.rv').forEach(el=>io.observe(el));
 
 /* ---------- countdown ---------- */
 const START=new Date('2026-12-01T00:00:00-03:00'),END=new Date('2027-01-31T23:59:59-03:00');
+const FORCE_END=location.hash==='#encerrado';
+const nowD=()=>FORCE_END?new Date(END.getTime()+864e5):new Date();
+const ENDED=nowD()>END;
+if(ENDED){document.body.classList.add('ended');
+ const c=$('#navcta');c.href='https://wa.me/5511979888263?text=Ol%C3%A1!%20Vim%20pelo%20site%20e%20quero%20saber%20sobre%20as%20condi%C3%A7%C3%B5es%20atuais%20da%20EC%20Assessoria.';c.target='_blank';c.rel='noopener';c.innerHTML='Falar<span class="hide-s">&nbsp;com a EC</span>';
+ $('#when').innerHTML='Edição encerrada em <b>31/01/2027</b>. Fale com a equipe sobre as condições atuais.';
+ $$('a[href="#monte"].btn').forEach(a=>{if(a.id!=='navcta')a.textContent='Falar com a equipe'});}
 const pad=n=>String(n).padStart(2,'0');
-const tick=()=>{const now=new Date();let target,lbl;
- if(now<START){target=START;lbl='A edição abre em'}else if(now<=END){target=END;lbl='A edição encerra em'}else{$('#countLbl').textContent='Edição encerrada. Fale com a gente sobre as condições atuais.';return}
+const tick=()=>{const now=nowD();let target,lbl;
+ if(now<START){target=START;lbl='A edição abre em'}else if(now<=END){target=END;lbl='A edição encerra em'}else{$('#countLbl').textContent='Edição encerrada em 31/01/2027. Fale com a gente sobre as condições atuais.';return}
  $('#countLbl').textContent=lbl;let s=Math.max(0,Math.floor((target-now)/1000));
  $('#cd').textContent=pad(Math.floor(s/86400));s%=86400;$('#ch').textContent=pad(Math.floor(s/3600));s%=3600;$('#cm').textContent=pad(Math.floor(s/60));$('#cs').textContent=pad(s%60)};
 tick();setInterval(tick,1000);
@@ -763,7 +779,7 @@ const render=()=>{
  $('#sTipo').textContent=st.tipo;$('#sData').textContent=st.date?fmtDate(st.date):'a definir';$('#sMod').textContent=st.mod;
  const yr=st.date?st.date.slice(0,4):'';const bad=yr&&yr!=='2027'&&yr!=='2028';
  if(bad)$('#sData').textContent=fmtDate(st.date)+' (fora de 2027/2028)';
- const msg=`Olá, Emilly! Vim pelo site e quero saber mais sobre o Natal EC.\n\nCelebração: ${st.tipo}\nData prevista: ${st.date?fmtDate(st.date):'a definir'}\nModalidade: ${st.mod}`;
+ const msg=`Olá, Emilly! Vim pelo site e quero saber mais sobre ${ENDED?'as condições atuais da EC Assessoria':'o Natal EC'}.\n\nCelebração: ${st.tipo}\nData prevista: ${st.date?fmtDate(st.date):'a definir'}\nModalidade: ${st.mod}`;
  $('#wa').href=`https://wa.me/${WA}?text=${encodeURIComponent(msg)}`;
  try{localStorage.setItem('natalEC',JSON.stringify(st))}catch(e){}};
 $$('.chips').forEach(g=>g.addEventListener('click',e=>{const c=e.target.closest('.chip');if(!c)return;st[g.dataset.g]=c.dataset.v;render();if(!RM){const r=c.getBoundingClientRect();burst(r.left+r.width/2,r.top,14)}}));
@@ -807,7 +823,7 @@ $('#fbp').addEventListener('click',()=>{fPaused=!fPaused;$('#fbp').setAttribute(
 $('#story').addEventListener('keydown',e=>{if(e.key==='ArrowRight')showFb(fi+1);if(e.key==='ArrowLeft')showFb(fi-1)});
 showFb(0,true);requestAnimationFrame(t=>{fT0=t;requestAnimationFrame(fbLoop)});
 /* ---------- campaign line ---------- */
-function runLine(){const now=Date.now(),p=Math.min(1,Math.max(0,(now-START)/(END-START)));
+function runLine(){const now=nowD().getTime(),p=Math.min(1,Math.max(0,(now-START)/(END-START)));
  const pre=now<START;$('#line').classList.toggle('pre',pre);$('#fill').style.width=(p*100)+'%';$('#now').style.left=pre?'-64px':(p*100)+'%';
  const days=Math.floor((START-now)/864e5),left=Math.ceil((END-now)/864e5);
  $('#status').textContent=now<START?(days<1?'A edição abre amanhã, 01/12. Já dá para chamar a equipe e reservar a sua data.':`${days===1?'Falta 1 dia':'Faltam '+days+' dias'} para a abertura. Já dá para chamar a equipe e reservar a sua data.`):now<=END?`Restam ${left} ${left===1?'dia':'dias'} de edição. As datas são confirmadas por ordem de contratação.`:'O período da edição terminou. Fale com a equipe sobre as condições atuais.'}
